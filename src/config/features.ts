@@ -5,8 +5,7 @@
 
 /**
  * Languages other than English: the app's language picker and the
- * paperwork-language setting. Off for now, so the interface is English
- * whatever a browser's language or an earlier choice says. The German
- * dictionary stays in place for when this comes back.
+ * paperwork-language setting. The interface currently ships EN/DE/ZH-CN
+ * chrome strings; untranslated domain labels fall back to English.
  */
-export const LANGUAGE_SWITCHING_ENABLED = false;
+export const LANGUAGE_SWITCHING_ENABLED = true;

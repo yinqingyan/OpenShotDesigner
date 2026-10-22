@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SUPPORTED_LANGUAGES, translate, type I18nKey } from '../dictionary';
+import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES, translate, type I18nKey } from '../dictionary';
 
 const KEYS: I18nKey[] = [
   'save.saving',
@@ -33,5 +33,11 @@ describe('i18n dictionary', () => {
 
   it('falls back to English for unknown languages', () => {
     expect(translate('fr' as never, 'save.saved')).toBe(translate('en', 'save.saved'));
+  });
+
+  it('offers a native Simplified Chinese label and translations', () => {
+    expect(LANGUAGE_LABELS['zh-CN']).toBe('简体中文');
+    expect(translate('zh-CN', 'dashboard.title')).toBe('项目');
+    expect(translate('zh-CN', 'common.cancel')).toBe('取消');
   });
 });

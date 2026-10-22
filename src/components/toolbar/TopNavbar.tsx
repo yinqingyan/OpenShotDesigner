@@ -58,7 +58,7 @@ import { exportProjectPackageV2 } from '../../utils/projectPackageV2';
 import { recordBackup } from '../../utils/cloud/backupHistory';
 import { useWorkspaceUI } from '../../context/WorkspaceUIContext';
 import { useLanguage } from '../../i18n/LanguageContext';
-import { SUPPORTED_LANGUAGES } from '../../i18n/dictionary';
+import { LANGUAGE_LABELS, SUPPORTED_LANGUAGES } from '../../i18n/dictionary';
 
 /** On-set mode is a full-screen tool opened on the day; it loads on demand. */
 const OnSetModeOverlay = lazy(() => import('../onset/OnSetModeOverlay').then((m) => ({ default: m.OnSetModeOverlay })));
@@ -264,7 +264,7 @@ export const TopNavbar: React.FC = () => {
         >
           {SUPPORTED_LANGUAGES.map((code) => (
             <option key={code} value={code}>
-              {code.toUpperCase()}
+              {LANGUAGE_LABELS[code]}
             </option>
           ))}
         </select>}

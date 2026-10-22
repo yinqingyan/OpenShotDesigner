@@ -1,5 +1,5 @@
 /**
- * Minimal DE/EN chrome translation (no dependency).
+ * Minimal EN/DE/ZH-CN chrome translation (no dependency).
  *
  * The app's domain vocabulary (shot sizes, departments, paperwork labels) is
  * hundreds of strings and stays English for now — translating the *chrome*
@@ -7,17 +7,25 @@
  * without a risky string-by-string migration. Every key exists in both
  * languages; `t()` falls back to English when a language or key is missing.
  */
-export type AppLanguage = 'en' | 'de';
+export type AppLanguage = 'en' | 'de' | 'zh-CN';
 
 const LANG_KEY = 'openshotdesigner_lang';
 
-export const SUPPORTED_LANGUAGES: AppLanguage[] = ['en', 'de'];
+export const SUPPORTED_LANGUAGES: AppLanguage[] = ['en', 'de', 'zh-CN'];
+
+export const LANGUAGE_LABELS: Record<AppLanguage, string> = {
+  en: 'English',
+  de: 'Deutsch',
+  'zh-CN': '简体中文',
+};
 
 export const detectLanguage = (): AppLanguage => {
   try {
     const stored = localStorage.getItem(LANG_KEY);
-    if (stored === 'de' || stored === 'en') return stored;
-    return navigator.language.toLowerCase().startsWith('de') ? 'de' : 'en';
+    if (stored === 'de' || stored === 'en' || stored === 'zh-CN') return stored;
+    const browserLanguage = navigator.language.toLowerCase();
+    if (browserLanguage.startsWith('zh')) return 'zh-CN';
+    return browserLanguage.startsWith('de') ? 'de' : 'en';
   } catch {
     return 'en';
   }
@@ -73,7 +81,27 @@ const de: Record<I18nKey, string> = {
   'common.save': 'Speichern',
 };
 
-const dictionaries: Record<AppLanguage, Record<I18nKey, string>> = { en, de };
+const zhCN: Record<I18nKey, string> = {
+  'save.saving': '正在保存…',
+  'save.saved': '已保存到此浏览器',
+  'save.error': '保存失败',
+  'save.retry': '重试',
+  'nav.dashboard': '所有项目（项目总览）',
+  'nav.rename': '点击重命名项目',
+  'nav.language': '界面语言',
+  'dashboard.title': '项目',
+  'dashboard.new': '新建项目',
+  'dashboard.open': '打开',
+  'dashboard.backupAvailable': '有安全副本可用',
+  'dashboard.restoreBackup': '恢复安全副本',
+  'conflict.reload': '重新加载',
+  'common.close': '关闭',
+  'common.cancel': '取消',
+  'common.delete': '删除',
+  'common.save': '保存',
+};
+
+const dictionaries: Record<AppLanguage, Record<I18nKey, string>> = { en, de, 'zh-CN': zhCN };
 
 export const translate = (lang: AppLanguage, key: I18nKey): string =>
   dictionaries[lang]?.[key] ?? en[key];

@@ -314,7 +314,7 @@ def add_summary(workbook, metadata: dict, preview: bool) -> None:
                 ("英文文本", "已导出"),
                 ("中文译文", "待审校"),
                 ("PDF 中文支持", "尚未实现"),
-                ("代码迁移", "尚未开始"),
+                ("代码迁移", "基础入口已接入"),
             ],
         ),
     ]

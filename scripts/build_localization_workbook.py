@@ -12,6 +12,8 @@ import xlsxwriter
 
 ROOT = Path(__file__).resolve().parent.parent
 CATALOG = ROOT / "localization" / "zh-CN" / "english-source-catalog.json"
+DRAFTS = ROOT / "localization" / "zh-CN" / "zh-cn-drafts.json"
+TERMS = ROOT / "localization" / "zh-CN" / "zh-cn-terminology.json"
 OUTPUT = ROOT / "localization" / "zh-CN" / "OpenShotDesigner-zh-CN-review.xlsx"
 PREVIEW_DIR = Path("/private/tmp/openshot-localization-previews")
 PREVIEW_OUTPUT = PREVIEW_DIR / "OpenShotDesigner-zh-CN-preview.xlsx"
@@ -60,6 +62,7 @@ def add_review_sheet(
     widths: list[int],
     tab_color: str,
     translation_col: int | None = None,
+    reviewed_translation_col: int | None = None,
     status_col: int | None = None,
     risk_col: int | None = None,
     table_prefix: str = "Table",
@@ -144,6 +147,8 @@ def add_review_sheet(
             selected_format = centered_format if col_index - 1 in {0, 7, 8, 11} else body_format
             if translation_col is not None and col_index - 1 == translation_col:
                 selected_format = input_format
+            if reviewed_translation_col is not None and col_index - 1 == reviewed_translation_col:
+                selected_format = input_format
             if status_col is not None and col_index - 1 == status_col:
                 selected_format = centered_format
             if risk_col is not None and col_index - 1 == risk_col:
@@ -165,7 +170,7 @@ def add_review_sheet(
             status_col + 1,
             data_last_row,
             status_col + 1,
-            {"validate": "list", "source": ["待翻译", "审校中", "已完成", "保留英文"]},
+            {"validate": "list", "source": ["待确认", "需修改", "已确认"]},
         )
         worksheet.conditional_format(
             4,
@@ -175,9 +180,23 @@ def add_review_sheet(
             {
                 "type": "cell",
                 "criteria": "==",
-                "value": '"已完成"',
+                "value": '"已确认"',
                 "format": workbook.add_format(
                     {"bg_color": "#DCFCE7", "font_color": "#166534", "bold": True}
+                ),
+            },
+        )
+        worksheet.conditional_format(
+            4,
+            status_col + 1,
+            data_last_row,
+            status_col + 1,
+            {
+                "type": "cell",
+                "criteria": "==",
+                "value": '"需修改"',
+                "format": workbook.add_format(
+                    {"bg_color": "#FEF3C7", "font_color": "#92400E", "bold": True}
                 ),
             },
         )
@@ -273,7 +292,11 @@ def add_summary(workbook, metadata: dict, preview: bool) -> None:
     )
 
     worksheet.merge_range("B2:K2", "Open Shot Designer — 简体中文本地化审校", title_format)
-    worksheet.merge_range("B3:K3", "英文界面文本提取、领域术语与 PDF 风险清单", subtitle_format)
+    worksheet.merge_range(
+        "B3:K3",
+        "专业初译、逐条确认、全部确认后进入合成的本地化审校表",
+        subtitle_format,
+    )
     worksheet.print_area("B1:L24")
     worksheet.fit_to_pages(1, 1)
     worksheet.set_row(1, 30)
@@ -312,9 +335,9 @@ def add_summary(workbook, metadata: dict, preview: bool) -> None:
             "K5:L8",
             [
                 ("英文文本", "已导出"),
-                ("中文译文", "待审校"),
-                ("PDF 中文支持", "尚未实现"),
-                ("代码迁移", "基础入口已接入"),
+                ("专业初译", "已生成，待逐条确认"),
+                ("确认工具", "zh-CN-review.html"),
+                ("合成门槛", "全部条目已确认"),
             ],
         ),
     ]
@@ -329,11 +352,11 @@ def add_summary(workbook, metadata: dict, preview: bool) -> None:
 
     worksheet.write_string("B11", "执行顺序", section_format)
     sequence = [
-        "1. 先审校 Terminology，锁定高频电影制作与摄影术语。",
-        "2. 在 UI Strings 各分表中填写简体中文并更新状态。",
-        "3. PDF Strings 需要单独设计嵌入式中文字体、断行与分页。",
-        "4. 同一原文的不同语义必须拆成独立稳定键，不能只按英文文本复用。",
-        "5. 迁移后运行 lint、测试、构建，并逐页面截图回归。",
+        "1. 打开 zh-CN-review.html，逐条核对专业初译；也可在 Excel 中逐项填写。",
+        "2. 每条点击“确认并下一项”或“需修改”；保留英文项必须“确认保留英文”。",
+        "3. 全部待确认项处理完后，工具才解锁“进入合成”，并导出已确认清单。",
+        "4. 术语、品牌、变量、快捷键和 PDF 技术备注必须在确认时一并核对。",
+        "5. 合成完成后运行 lint、测试、构建，并逐页面截图回归。",
     ]
     for offset, text in enumerate(sequence, start=12):
         worksheet.merge_range(offset - 1, 1, offset - 1, 11, text, body_format)
@@ -350,8 +373,8 @@ def add_summary(workbook, metadata: dict, preview: bool) -> None:
         worksheet.set_row(offset - 1, 28)
 
     warning = (
-        "注意：本表是本地化审校清单，不是已完成的中文版本；枚举值、持久化字段、"
-        "CSV/Resolve 表头和第三方专名不能直接翻译。"
+        "门禁规则：专业初译不等于完成。只有所有条目为“已确认”，才能进入代码合成；"
+        "当前不执行合成，避免未经人工核对的译文进入应用。"
     )
     worksheet.merge_range("B24:L24", warning, note_format)
     worksheet.set_row(23, 38)
@@ -360,9 +383,15 @@ def add_summary(workbook, metadata: dict, preview: bool) -> None:
 
 def build(preview: bool) -> Path:
     data = json.loads(CATALOG.read_text(encoding="utf-8"))
+    draft_data = json.loads(DRAFTS.read_text(encoding="utf-8"))
+    term_data = json.loads(TERMS.read_text(encoding="utf-8"))
+    drafts = {entry["id"]: entry for entry in draft_data["entries"]}
     metadata = data["metadata"]
     entries = data["entries"]
-    terms = data["terminology"]
+    terms = term_data["entries"]
+    metadata = dict(metadata)
+    metadata["counts"] = dict(metadata["counts"])
+    metadata["counts"]["terminology"] = len(terms)
     ui_entries = [entry for entry in entries if entry["translatable"]]
     pdf_entries = [entry for entry in ui_entries if entry["pdf"]]
     do_not_entries = [entry for entry in entries if not entry["translatable"]]
@@ -380,22 +409,46 @@ def build(preview: bool) -> Path:
 
     workbook = xlsxwriter.Workbook(output, {"use_future_functions": False})
     add_summary(workbook, metadata, preview)
+    workflow_rows = [
+        ["1", "查看专业初译", "先看英文原文、专业初译、置信度和面板语境说明。", "理解该行在应用中的实际含义。"],
+        ["2", "按条确认", "打开 zh-CN-review.html；正确则点“确认并下一项”，需要修改则点“需修改”。", "状态离开“待确认”。"],
+        ["3", "修改译文", "在审校工具或 Excel 的“核对后简体中文”列填写最终版本。", "译文完整，术语和变量数量一致。"],
+        ["4", "确认保留英文", "品牌、枚举、协议、变量和技术值必须点“确认保留英文”。", "所有保留项明确经过人工确认。"],
+        ["5", "验收到合成门槛", "待确认和需修改都为 0 后，工具解锁“进入合成”。", "导出 zh-cn-confirmed.json。"],
+        ["6", "进入代码合成", "使用已确认清单建立正式 i18n 键并逐页迁移。", "此步骤在当前阶段不自动执行。"],
+    ]
+    add_review_sheet(
+        workbook,
+        "Review Workflow",
+        "中文确认流程与合成门禁",
+        "流程固定为：专业初译 → 逐条确认/修改 → 全部确认 → 导出确认清单 → 代码合成。",
+        ["步骤", "操作", "具体做法", "完成条件"],
+        workflow_rows,
+        [8, 22, 72, 48],
+        "#334155",
+        table_prefix="ReviewWorkflow",
+        preview=preview,
+    )
 
     ui_rows = [
         [
             entry["id"],
             entry["source"],
+            drafts[entry["id"]]["translation"],
+            "",
+            drafts[entry["id"]]["confidence"],
+            drafts[entry["id"]]["status"],
+            drafts[entry["id"]]["context_note"],
+            drafts[entry["id"]]["disposition"],
             entry["key"],
             entry["module"],
             entry["textType"],
             entry["sourceRefs"],
             entry["placeholders"],
             "Yes" if entry["pdf"] else "No",
-            "Yes",
-            "",
-            "待翻译",
             entry["layoutRisk"],
-            entry["note"],
+            entry["note"] or drafts[entry["id"]]["reason"],
+            "",
         ]
         for entry in ui_entries
     ]
@@ -406,28 +459,33 @@ def build(preview: bool) -> Path:
             workbook,
             f"UI Strings{suffix}",
             f"Open Shot Designer 界面英文本地化清单{suffix}",
-            f"按唯一英文原文归并；共 {len(ui_chunks)} 个审校分表。审校后再迁移到正式 i18n 键。",
+            f"专业初译已填入；共 {len(ui_chunks)} 个审校分表。你逐条核对后填写“核对后简体中文”并把状态改为“已确认”。",
             [
                 "编号",
                 "英文原文",
+                "专业初译",
+                "核对后简体中文",
+                "初译置信度",
+                "状态",
+                "专业依据/上下文说明",
+                "处置",
                 "临时键",
                 "模块",
                 "文本类型",
                 "来源位置",
                 "变量",
                 "PDF/打印",
-                "可翻译",
-                "简体中文",
-                "状态",
                 "布局风险",
                 "审校备注",
+                "修改说明",
             ],
             rows,
-            [13, 52, 18, 22, 18, 42, 20, 11, 10, 44, 12, 10, 44],
+            [13, 50, 46, 46, 11, 11, 62, 12, 18, 22, 18, 42, 20, 11, 10, 44, 42],
             BLUE,
-            translation_col=9,
-            status_col=10,
-            risk_col=11,
+            translation_col=2,
+            reviewed_translation_col=3,
+            status_col=5,
+            risk_col=14,
             table_prefix=f"UIStrings{index}",
             preview=preview,
         )
@@ -436,11 +494,12 @@ def build(preview: bool) -> Path:
         [
             index,
             term["source"],
-            term["suggestion"],
-            term["area"],
+            term["translation"],
+            "",
+            term["module"].removeprefix("术语/"),
             term["confidence"],
             term["status"],
-            term["note"],
+            term["context_note"],
         ]
         for index, term in enumerate(terms, start=1)
     ]
@@ -448,13 +507,14 @@ def build(preview: bool) -> Path:
         workbook,
         "Terminology",
         "电影制作与摄影术语建议",
-        "这些译名用于保持界面一致；“建议简体中文”仍需结合具体页面语境审校。",
-        ["序号", "英文术语", "建议简体中文", "使用范围", "置信度", "状态", "说明"],
+        "这些译名用于保持界面一致；专业初译仍需逐条核对后才能被合成阶段使用。",
+        ["序号", "英文术语", "专业初译", "核对后简体中文", "使用范围", "置信度", "状态", "说明"],
         term_rows,
-        [8, 28, 28, 22, 10, 12, 60],
+        [8, 30, 30, 30, 22, 10, 11, 62],
         GREEN,
         translation_col=2,
-        status_col=5,
+        reviewed_translation_col=3,
+        status_col=6,
         table_prefix="Terminology",
         preview=preview,
     )
@@ -463,14 +523,19 @@ def build(preview: bool) -> Path:
         [
             entry["id"],
             entry["source"],
+            drafts[entry["id"]]["translation"],
+            "",
+            drafts[entry["id"]]["confidence"],
+            drafts[entry["id"]]["status"],
+            drafts[entry["id"]]["context_note"],
+            drafts[entry["id"]]["disposition"],
             entry["module"],
             entry["sourceRefs"],
             entry["placeholders"],
             entry["layoutRisk"],
             "Yes",
-            "",
-            "待翻译",
             entry["note"] or "需验证嵌入式中文字体、断行与分页。",
+            "",
         ]
         for entry in pdf_entries
     ]
@@ -478,14 +543,31 @@ def build(preview: bool) -> Path:
         workbook,
         "PDF Strings",
         "PDF 与打印文案",
-        "这些文案进入 canvas/report/PDF 输出；中文 PDF 必须先替换仅支持 WinAnsi 的标准字体。",
-        ["编号", "英文原文", "模块", "来源位置", "变量", "布局风险", "PDF/打印", "简体中文", "状态", "技术备注"],
+        "这些文案进入 canvas/report/PDF 输出；中文 PDF 必须先替换仅支持 WinAnsi 的标准字体。逐条确认后才能进入合成。",
+        [
+            "编号",
+            "英文原文",
+            "专业初译",
+            "核对后简体中文",
+            "初译置信度",
+            "状态",
+            "专业依据/上下文说明",
+            "处置",
+            "模块",
+            "来源位置",
+            "变量",
+            "布局风险",
+            "PDF/打印",
+            "技术备注",
+            "修改说明",
+        ],
         pdf_rows,
-        [13, 54, 22, 44, 20, 10, 11, 44, 12, 54],
+        [13, 52, 46, 46, 11, 11, 62, 12, 22, 44, 20, 10, 11, 54, 42],
         PURPLE,
-        translation_col=7,
-        status_col=8,
-        risk_col=5,
+        translation_col=2,
+        reviewed_translation_col=3,
+        status_col=5,
+        risk_col=11,
         table_prefix="PDFStrings",
         preview=preview,
     )

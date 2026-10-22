@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { GettingStarted } from './GettingStarted';
 import { useDismiss } from '../common/useDismiss';
-import { LANGUAGE_SWITCHING_ENABLED } from '../../config/features';
+import { APP_LANGUAGE_SWITCHING_ENABLED } from '../../config/features';
 import { updateProductionDetailsCommand } from '../../domain/commands';
 import { useFloorPlan } from '../../context/FloorPlanContext';
 import type { CategoryOpacitySettings } from '../../context/FloorPlanContext';
@@ -169,7 +169,7 @@ export const TopNavbar: React.FC = () => {
   return (
     <header
       id="top-navbar"
-      aria-label="Project and workspace actions"
+      aria-label={t('nav.projectActions')}
       className={`${isCompact ? 'h-12 px-2 gap-1.5' : 'h-14 px-4 gap-3'} border-b flex items-center justify-between select-none z-30 transition-colors ${
         'bg-surface border-line text-ink'
       }`}
@@ -219,7 +219,7 @@ export const TopNavbar: React.FC = () => {
             'text-ink-soft hover:bg-surface-hover focus:bg-field'
           }`}
           title={t('nav.rename')}
-          aria-label="Project title"
+          aria-label={t('nav.projectTitle')}
         />
 
         {saveState === 'saving' && (
@@ -253,7 +253,7 @@ export const TopNavbar: React.FC = () => {
             </span>
           );
         })()}
-        {LANGUAGE_SWITCHING_ENABLED && <select
+        {APP_LANGUAGE_SWITCHING_ENABLED && <select
           value={lang}
           onChange={(e) => setLang(e.target.value as typeof lang)}
           title={t('nav.language')}
@@ -292,7 +292,7 @@ export const TopNavbar: React.FC = () => {
               'bg-surface border-line text-ink'
             }`}>
               <div className="text-[10px] font-bold opacity-60 uppercase px-2 py-1">
-                Scene Setups ({project.setups.length})
+                {t('nav.sceneSetups')} ({project.setups.length})
               </div>
               <div className="max-h-56 overflow-y-auto space-y-1">
                 {project.setups.map((setup) => (
@@ -322,7 +322,7 @@ export const TopNavbar: React.FC = () => {
                     </button>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       <span className="text-[10px] opacity-90 font-mono">
-                        {setup.shots.length} shots
+                        {setup.shots.length} {t('nav.shotCount')}
                       </span>
                       {project.setups.length > 1 && (
                         <button
@@ -358,7 +358,7 @@ export const TopNavbar: React.FC = () => {
                   className="w-full text-left px-2.5 py-1 text-xs text-accent-ink hover:bg-sky-50 dark:hover:bg-slate-800 rounded flex items-center gap-1.5 font-medium"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>+ New Scene Setup</span>
+                  <span>{t('nav.newSceneSetup')}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -367,7 +367,7 @@ export const TopNavbar: React.FC = () => {
                   }}
                   className={`w-full text-left px-2.5 py-1 text-xs rounded text-ink-soft hover:bg-surface-hover`}
                 >
-                  Duplicate Current Setup
+                  {t('nav.duplicateSceneSetup')}
                 </button>
                 {project.setups.length > 1 && (
                   <button
@@ -386,7 +386,7 @@ export const TopNavbar: React.FC = () => {
                     className="w-full text-left px-2.5 py-1 text-xs text-red-500 hover:bg-red-500/10 rounded flex items-center gap-1.5 font-medium"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    <span>Delete Current Scene</span>
+                    <span>{t('nav.deleteCurrentScene')}</span>
                   </button>
                 )}
               </div>
@@ -401,14 +401,14 @@ export const TopNavbar: React.FC = () => {
           <button
             onClick={() => setIsTemplatesOpen(!isTemplatesOpen)}
             aria-expanded={isTemplatesOpen}
-            aria-label="Templates"
-            title="Templates and example data"
+            aria-label={t('nav.templates')}
+            title={t('nav.templatesHint')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-colors ${
               'border-transparent hover:bg-surface-hover text-ink-soft'
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-ink-muted" />
-            <span className="hidden xl:inline whitespace-nowrap">Templates</span>
+            <span className="hidden xl:inline whitespace-nowrap">{t('nav.templates')}</span>
             <ChevronDown className="w-3 h-3 opacity-60" />
           </button>
 
@@ -417,7 +417,7 @@ export const TopNavbar: React.FC = () => {
               'bg-surface border-line text-ink'
             }`}>
               <div className="text-[10px] font-bold opacity-60 uppercase px-2 py-1">
-                Educational Presets
+                {t('nav.educationalPresets')}
               </div>
               <button
                 onClick={() => {
@@ -450,7 +450,7 @@ export const TopNavbar: React.FC = () => {
 
               <div className={`mt-1 pt-1 border-t border-line-strong`}>
                 <div className="text-[10px] font-bold opacity-60 uppercase px-2 py-1">
-                  Example production data
+                  {t('nav.exampleData')}
                 </div>
                 <button
                   onClick={() => {
@@ -499,8 +499,8 @@ export const TopNavbar: React.FC = () => {
           <button
             onClick={undo}
             disabled={historyIndex <= 0}
-            title="Undo (Ctrl+Z)"
-            aria-label="Undo (Ctrl+Z)"
+            title={t('action.undo')}
+            aria-label={t('action.undo')}
             className="p-2 rounded-lg text-ink-muted hover:text-ink hover:bg-surface-hover disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
           >
             <Undo2 className="w-3.5 h-3.5" />
@@ -508,8 +508,8 @@ export const TopNavbar: React.FC = () => {
           <button
             onClick={redo}
             disabled={historyIndex >= historyLength - 1}
-            title="Redo (Ctrl+Y)"
-            aria-label="Redo (Ctrl+Y)"
+            title={t('action.redo')}
+            aria-label={t('action.redo')}
             className="p-2 rounded-lg text-ink-muted hover:text-ink hover:bg-surface-hover disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
           >
             <Redo2 className="w-3.5 h-3.5" />
@@ -524,7 +524,7 @@ export const TopNavbar: React.FC = () => {
               onClick={() => setGridSettings({ snap: !gridSettings.snap })}
               aria-pressed={gridSettings.snap}
               title={gridSettings.snap ? 'Snap to Grid: ON' : 'Snap to Grid: OFF'}
-              aria-label="Snap to grid"
+              aria-label={t('action.snapGrid')}
               className={`p-2 rounded-lg border transition-colors ${
                 gridSettings.snap
                   ? 'bg-accent-soft text-accent-ink border-transparent'
@@ -552,14 +552,14 @@ export const TopNavbar: React.FC = () => {
               <button
                 onClick={() => setIsViewingOptionsOpen(!isViewingOptionsOpen)}
                 aria-expanded={isViewingOptionsOpen}
-                aria-label="Viewing Options"
-                title="Viewing options & category opacity"
+                aria-label={t('view.title')}
+                title={t('view.title')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors ${
                   'border-transparent hover:bg-surface-hover text-ink-soft'
                 }`}
               >
                 <Eye className="w-3.5 h-3.5 text-sky-400" />
-                <span className="hidden xl:inline whitespace-nowrap">Viewing Options</span>
+                <span className="hidden xl:inline whitespace-nowrap">{t('view.title')}</span>
                 <ChevronDown className="w-3 h-3 opacity-60" />
               </button>
 
@@ -571,7 +571,7 @@ export const TopNavbar: React.FC = () => {
                 >
                   <div className="flex items-center justify-between border-b pb-2">
                     <span className="text-xs font-bold uppercase tracking-wider text-accent-ink">
-                      Viewing & Opacity Controls
+                      {t('view.opacityControls')}
                     </span>
                     <button
                       onClick={() => setIsViewingOptionsOpen(false)}
@@ -699,7 +699,7 @@ export const TopNavbar: React.FC = () => {
                     {/* Light Label Details Section */}
                     <div className="border-t pt-2 space-y-1.5">
                       <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                        Light Label Elements
+                        {t('view.lightLabels')}
                       </div>
                       <label className="flex items-center justify-between cursor-pointer">
                         <span>Light Function / Role (Key, Fill...)</span>
@@ -744,7 +744,7 @@ export const TopNavbar: React.FC = () => {
                     <div className="flex items-center justify-between gap-2">
                       <div>
                         <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                          Workspace tabs
+                          {t('view.workspaceTabs')}
                         </div>
                         <p className="text-[10px] opacity-60 mt-0.5">Project presets are defaults—you can expose any module.</p>
                       </div>
@@ -753,7 +753,7 @@ export const TopNavbar: React.FC = () => {
                         onClick={() => PICKABLE_MODULES.forEach((module) => setModuleVisible(module.id, true))}
                         className="px-2 py-1 rounded-md bg-accent hover:bg-accent-hover text-white text-[10px] font-bold whitespace-nowrap"
                       >
-                        Show all
+                        {t('view.showAll')}
                       </button>
                     </div>
                     <div className="grid grid-cols-2 gap-x-3 gap-y-2">
@@ -781,7 +781,7 @@ export const TopNavbar: React.FC = () => {
                   {/* Category Opacity Sliders */}
                   <div className="border-t pt-2.5 space-y-2.5">
                     <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                      Category Opacity Sliders
+                      {t('view.categoryOpacity')}
                     </div>
 
                     {OPACITY_CATEGORIES.map(({ key, label }) => {
@@ -821,13 +821,13 @@ export const TopNavbar: React.FC = () => {
             {/* Viewfinder Button */}
             <button
               onClick={() => openViewfinder()}
-              title="Simulate Camera Viewfinder"
+              title={t('nav.viewfinderHint')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors ${
                 'border-transparent hover:bg-surface-hover text-ink-soft'
               }`}
             >
               <Eye className="w-3.5 h-3.5 text-ink-muted" />
-              <span className="hidden lg:inline">Viewfinder</span>
+              <span className="hidden lg:inline">{t('nav.viewfinder')}</span>
             </button>
           </>
         )}
@@ -836,8 +836,8 @@ export const TopNavbar: React.FC = () => {
         <button
           id="btn-open-export"
           onClick={() => openExportModal()}
-          title="Export & Print Studio"
-          aria-label="Open the export and print studio"
+          title={t('export.open')}
+          aria-label={t('export.openHint')}
           className="h-8 w-8 inline-flex items-center justify-center bg-accent hover:bg-accent-hover text-white rounded-md transition-colors shadow-sm"
         >
           <FileDown className="w-3.5 h-3.5" />
@@ -853,8 +853,8 @@ export const TopNavbar: React.FC = () => {
                   setIsSaveMenuOpen((open) => !open);
                 }}
                 aria-expanded={isSaveMenuOpen}
-                title="Save project file (.osd recommended)"
-                aria-label="Save project file"
+                title={t('save.projectFileHint')}
+                aria-label={t('save.projectFile')}
                 className="p-2 rounded-lg border border-transparent transition-colors text-ink-muted hover:text-ink hover:bg-surface-hover"
               >
                 <Save className="w-3.5 h-3.5" />
@@ -905,13 +905,13 @@ export const TopNavbar: React.FC = () => {
                         onClick={runSaveMenu}
                         className="flex-1 px-2.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-[11px] font-semibold"
                       >
-                        Save
+                        {t('common.save')}
                       </button>
                       <button
                         onClick={() => setIsSaveMenuOpen(false)}
                         className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold border-line-strong hover:bg-surface-hover`}
                       >
-                        Cancel
+                        {t('common.cancel')}
                       </button>
                     </div>
                   </div>
@@ -921,8 +921,8 @@ export const TopNavbar: React.FC = () => {
 
             <button
               onClick={() => fileInputRef.current?.click()}
-              title="Open / Import Project JSON"
-              aria-label="Open / Import Project JSON"
+              title={t('nav.openImportJson')}
+              aria-label={t('nav.openImportJson')}
               className="p-2 rounded-lg border border-transparent transition-colors text-ink-muted hover:text-ink hover:bg-surface-hover"
             >
               <FolderOpen className="w-3.5 h-3.5" />
@@ -945,8 +945,8 @@ export const TopNavbar: React.FC = () => {
         {!isCompact && (
           <button
             onClick={() => setIsOnSetMode(true)}
-            title="Live shot tracker — on-set mode (plan §35)"
-            aria-label="Open live shot tracker"
+            title={t('nav.liveTrackerHint')}
+            aria-label={t('nav.liveTracker')}
             className={`p-2 rounded-lg border transition-colors ${
               'border-transparent text-ink-muted hover:text-ink hover:bg-surface-hover'
             }`}
@@ -963,8 +963,8 @@ export const TopNavbar: React.FC = () => {
               href={SPONSOR_LINKS.github}
               target="_blank"
               rel="noreferrer noopener"
-              title="Sponsor on GitHub"
-              aria-label="Sponsor on GitHub"
+              title={t('nav.sponsorGithub')}
+              aria-label={t('nav.sponsorGithub')}
               className={`p-2 rounded-lg border transition-colors ${
                 'border-transparent text-ink-subtle hover:text-pink-500 hover:bg-surface-hover'
               }`}
@@ -975,8 +975,8 @@ export const TopNavbar: React.FC = () => {
               href={SPONSOR_LINKS.coffee}
               target="_blank"
               rel="noreferrer noopener"
-              title="Buy me a coffee"
-              aria-label="Buy me a coffee"
+              title={t('nav.buyCoffee')}
+              aria-label={t('nav.buyCoffee')}
               className={`p-2 rounded-lg border transition-colors ${
                 'border-transparent text-ink-subtle hover:text-warn hover:bg-surface-hover'
               }`}
@@ -991,9 +991,9 @@ export const TopNavbar: React.FC = () => {
           <div className="relative" ref={overflowMenuRef}>
             <button
               onClick={() => setIsOverflowOpen((open) => !open)}
-              title="More controls"
+              title={t('nav.moreControls')}
               aria-expanded={isOverflowOpen}
-              aria-label="More controls"
+              aria-label={t('nav.moreControls')}
               className={`p-2 rounded-lg border transition-colors ${
                 'border-transparent text-ink-muted hover:text-ink hover:bg-surface-hover'
               }`}
@@ -1014,7 +1014,7 @@ export const TopNavbar: React.FC = () => {
                     }}
                     className={overflowItemClass}
                   >
-                    <span className="flex items-center gap-2"><LayoutGrid className="w-3.5 h-3.5" /> All projects</span>
+                    <span className="flex items-center gap-2"><LayoutGrid className="w-3.5 h-3.5" /> {t('nav.allProjects')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1040,7 +1040,7 @@ export const TopNavbar: React.FC = () => {
                     }}
                     className={overflowItemClass}
                   >
-                    <span className="flex items-center gap-2"><History className="w-3.5 h-3.5" /> Save revision…</span>
+                    <span className="flex items-center gap-2"><History className="w-3.5 h-3.5" /> {t('nav.saveRevision')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1049,8 +1049,8 @@ export const TopNavbar: React.FC = () => {
                     }}
                     className={overflowItemClass}
                   >
-                    <span className="flex items-center gap-2"><Magnet className="w-3.5 h-3.5" /> Snap to grid</span>
-                    <span className="text-[10px] font-mono opacity-70">{gridSettings.snap ? 'ON' : 'OFF'}</span>
+                    <span className="flex items-center gap-2"><Magnet className="w-3.5 h-3.5" /> {t('action.snapGrid')}</span>
+                    <span className="text-[10px] font-mono opacity-70">{t(gridSettings.snap ? 'grid.on' : 'grid.off')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1062,7 +1062,7 @@ export const TopNavbar: React.FC = () => {
                     }}
                     className={overflowItemClass}
                   >
-                    <span>Grid units</span>
+                    <span>{t('nav.gridUnits')}</span>
                     <span className="text-[10px] font-mono opacity-70">{gridSettings.unit.toUpperCase()}</span>
                   </button>
                   <button
@@ -1073,9 +1073,9 @@ export const TopNavbar: React.FC = () => {
                     className={overflowItemClass}
                   >
                     <span className="flex items-center gap-2">
-                      {isLight ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />} Theme
+                      {isLight ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />} {t('nav.theme')}
                     </span>
-                    <span className="text-[10px] opacity-70">{isLight ? 'Light' : 'Dark'}</span>
+                    <span className="text-[10px] opacity-70">{t(isLight ? 'theme.light' : 'theme.dark')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1084,7 +1084,7 @@ export const TopNavbar: React.FC = () => {
                     }}
                     className={overflowItemClass}
                   >
-                    <span className="flex items-center gap-2"><Clapperboard className="w-3.5 h-3.5 text-ok" /> Live shot tracker</span>
+                    <span className="flex items-center gap-2"><Clapperboard className="w-3.5 h-3.5 text-ok" /> {t('nav.liveTracker')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1093,7 +1093,7 @@ export const TopNavbar: React.FC = () => {
                     }}
                     className={overflowItemClass}
                   >
-                    <span className="flex items-center gap-2"><Eye className="w-3.5 h-3.5 text-ink-muted" /> Viewfinder</span>
+                    <span className="flex items-center gap-2"><Eye className="w-3.5 h-3.5 text-ink-muted" /> {t('nav.viewfinder')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1102,7 +1102,7 @@ export const TopNavbar: React.FC = () => {
                     }}
                     className={overflowItemClass}
                   >
-                    <span className="flex items-center gap-2"><Save className="w-3.5 h-3.5" /> Save .osd package</span>
+                    <span className="flex items-center gap-2"><Save className="w-3.5 h-3.5" /> {t('save.osdPackage')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1111,7 +1111,7 @@ export const TopNavbar: React.FC = () => {
                     }}
                     className={overflowItemClass}
                   >
-                    <span className="flex items-center gap-2"><Download className="w-3.5 h-3.5" /> Save JSON (experts)</span>
+                    <span className="flex items-center gap-2"><Download className="w-3.5 h-3.5" /> {t('save.jsonExperts')}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -1120,7 +1120,7 @@ export const TopNavbar: React.FC = () => {
                     }}
                     className={overflowItemClass}
                   >
-                    <span className="flex items-center gap-2"><FolderOpen className="w-3.5 h-3.5" /> Open project file</span>
+                    <span className="flex items-center gap-2"><FolderOpen className="w-3.5 h-3.5" /> {t('nav.openProjectFile')}</span>
                   </button>
                   <a
                     href={SPONSOR_LINKS.github}
@@ -1129,7 +1129,7 @@ export const TopNavbar: React.FC = () => {
                     onClick={() => setIsOverflowOpen(false)}
                     className={overflowItemClass}
                   >
-                    <span className="flex items-center gap-2"><Heart className="w-3.5 h-3.5 text-pink-500" /> Sponsor on GitHub</span>
+                    <span className="flex items-center gap-2"><Heart className="w-3.5 h-3.5 text-pink-500" /> {t('nav.sponsorGithub')}</span>
                   </a>
                   <a
                     href={SPONSOR_LINKS.coffee}
@@ -1138,7 +1138,7 @@ export const TopNavbar: React.FC = () => {
                     onClick={() => setIsOverflowOpen(false)}
                     className={overflowItemClass}
                   >
-                    <span className="flex items-center gap-2"><Coffee className="w-3.5 h-3.5 text-warn" /> Buy me a coffee</span>
+                    <span className="flex items-center gap-2"><Coffee className="w-3.5 h-3.5 text-warn" /> {t('nav.buyCoffee')}</span>
                   </a>
                 </div>
               </>

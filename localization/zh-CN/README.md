@@ -10,7 +10,7 @@
 - 工作分支：`codex/zh-cn-localization`
 - 提取范围：`src/**/*.ts` 和 `src/**/*.tsx`，排除测试与 `src/generated`
 - 提取方式：TypeScript AST
-- 界面状态：已接入 `zh-CN` 语言选项和 17 条 chrome 文案；其余业务文案继续回退英文
+- 界面状态：已接入 `zh-CN` 语言选项和 87 条顶部导航、项目页及 chrome 文案；其余业务文案继续回退英文
 
 本次扫描结果：
 

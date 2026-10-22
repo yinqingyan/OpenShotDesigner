@@ -90,6 +90,7 @@ import {
   inspectAssetStorage,
   type AssetStorageInspection,
 } from '../../utils/assetStorageInspection';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const triggerDownload = (blob: Blob, filename: string) => downloadBlob(blob, filename);
 
@@ -134,6 +135,7 @@ export const ProjectDashboard: React.FC = () => {
   const { project, projects, activeProjectId, createNewProject, openProjectById, duplicateProject, renameProject, deleteProjectById, loadProjectFromJson, restoreRevision, applyMergedProject } = useFloorPlan();
   const { isDashboardOpen, closeDashboard, theme } = useWorkspaceUI();
   const { choose, notice } = useDialogs();
+  const { t } = useLanguage();
 
   const isLight = theme === 'light';
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -681,9 +683,9 @@ export const ProjectDashboard: React.FC = () => {
               <Clapperboard className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-lg sm:text-xl font-black tracking-tight uppercase">Your productions</h1>
+              <h1 className="text-lg sm:text-xl font-black tracking-tight uppercase">{t('dashboard.yourProductions')}</h1>
               <p className={`text-xs text-ink-muted`}>
-                Start a new project, or pick up where you left off. Everything is saved in this browser.
+                {t('dashboard.subtitle')}
               </p>
             </div>
           </div>
@@ -691,25 +693,25 @@ export const ProjectDashboard: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setDriveOpen(true)}
-              title={(driveToken || nextcloud) ? 'Cloud backup: connected — manage backups' : 'Cloud backup: sign in and save .osd packages'}
-              aria-label="Cloud backup"
+              title={t((driveToken || nextcloud) ? 'dashboard.cloudHintConnected' : 'dashboard.cloudHintDisconnected')}
+              aria-label={t('dashboard.cloud')}
               className={`px-2.5 py-2 rounded-lg border text-xs font-semibold flex items-center gap-1.5 border-line-strong hover:bg-slate-200 dark:hover:bg-slate-800`}
             >
-              <Cloud className={`w-4 h-4 ${driveToken || nextcloud ? 'text-emerald-500' : 'text-sky-500'}`} /> Cloud
+              <Cloud className={`w-4 h-4 ${driveToken || nextcloud ? 'text-emerald-500' : 'text-sky-500'}`} /> {t('dashboard.cloud')}
               {(driveToken || nextcloud) && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden />}
             </button>
             <button
               onClick={openStorage}
-              title="Inspect browser media storage"
+              title={t('dashboard.storageHint')}
               className={`px-2.5 py-2 rounded-lg border text-xs font-semibold flex items-center gap-1.5 border-line-strong hover:bg-surface-muted`}
             >
-              <HardDrive className="w-4 h-4" /> Storage
+              <HardDrive className="w-4 h-4" /> {t('dashboard.storage')}
             </button>
             {projects.length > 0 && (
               <button
                 onClick={closeDashboard}
-                title="Back to the workspace"
-                aria-label="Back to the workspace"
+                title={t('dashboard.backWorkspace')}
+                aria-label={t('dashboard.backWorkspace')}
                 className={`p-2 rounded-lg border border-line-strong hover:bg-surface-muted`}
               >
                 <X className="w-4 h-4" />
@@ -721,7 +723,7 @@ export const ProjectDashboard: React.FC = () => {
         {/* New project */}
         <div className={`border rounded-2xl p-4 mb-6 shadow-sm ${panel}`}>
           <h2 className="text-xs font-bold uppercase tracking-wide mb-3 flex items-center gap-2">
-            <Plus className="w-4 h-4 text-accent-ink" /> New project
+            <Plus className="w-4 h-4 text-accent-ink" /> {t('dashboard.new')}
           </h2>
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
             <input
@@ -730,32 +732,32 @@ export const ProjectDashboard: React.FC = () => {
               onKeyDown={(event) => {
                 if (event.key === 'Enter') handleCreate();
               }}
-              placeholder="Production title (e.g. The Long Walk Home)"
+              placeholder={t('dashboard.titlePlaceholder')}
               className={`${field} sm:flex-1`}
             />
             <button
               onClick={handleCreate}
               className="px-4 py-2 rounded-lg bg-accent hover:bg-accent-hover text-white text-sm font-semibold flex items-center justify-center gap-1.5"
             >
-              <Plus className="w-4 h-4" /> Create
+              <Plus className="w-4 h-4" /> {t('dashboard.create')}
             </button>
             <button onClick={() => fileInputRef.current?.click()} className={`${ghostButton} justify-center py-2`}>
-              <FolderOpen className="w-3.5 h-3.5" /> Import project file
+              <FolderOpen className="w-3.5 h-3.5" /> {t('dashboard.importProject')}
             </button>
             {supportsNativeProjectOpen() && (
               <button
                 onClick={handleNativeOpen}
-                title="Open a .osd file with write-back: Ctrl+S saves into the same file"
+                title={t('dashboard.openFileHint')}
                 className={`${ghostButton} justify-center py-2`}
               >
-                <FolderOpen className="w-3.5 h-3.5" /> Open…
+                <FolderOpen className="w-3.5 h-3.5" /> {t('dashboard.open')}…
               </button>
             )}
             <input ref={fileInputRef} type="file" accept=".osd,.json,application/json" onChange={handleImport} className="hidden" />
           </div>
           {listRecentProjectFiles().length > 0 && (
             <div className="mt-3 text-[11px] opacity-80">
-              <span className="font-bold uppercase tracking-wide text-[10px]">Recent files: </span>
+              <span className="font-bold uppercase tracking-wide text-[10px]">{t('dashboard.recentFiles')} </span>
               {listRecentProjectFiles().map((entry) => (
                 <button
                   key={`${entry.fileName}-${entry.savedAt}`}
@@ -776,14 +778,14 @@ export const ProjectDashboard: React.FC = () => {
               className="accent-sky-600"
             />
             <span className="text-ink-soft">
-              Start with the example scenes (dialogue coverage + noir interrogation) instead of an empty stage
+              {t('dashboard.startWithSamples')}
             </span>
           </label>
 
           {/* Workspace preset (plan §1.2): configures module visibility only */}
           <div className="mt-4">
             <div className="text-[10px] font-bold uppercase tracking-wide opacity-60 mb-1.5">
-              Workspace preset
+              {t('dashboard.workspacePreset')}
             </div>
             <div className="flex flex-wrap gap-1.5">
               {WORKSPACE_PRESETS.map((preset) => (
@@ -811,7 +813,7 @@ export const ProjectDashboard: React.FC = () => {
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="text-[10px] font-bold uppercase tracking-wide opacity-60">
-                    Modules to show
+                    {t('dashboard.modulesToShow')}
                   </div>
                   <div className="flex items-center gap-1.5">
                     <button
@@ -821,7 +823,7 @@ export const ProjectDashboard: React.FC = () => {
                         'border-line-strong hover:bg-surface-muted'
                       }`}
                     >
-                      All
+                      {t('dashboard.all')}
                     </button>
                     <button
                       type="button"
@@ -830,7 +832,7 @@ export const ProjectDashboard: React.FC = () => {
                         'border-line-strong hover:bg-surface-muted'
                       }`}
                     >
-                      None
+                      {t('dashboard.none')}
                     </button>
                   </div>
                 </div>
@@ -858,7 +860,7 @@ export const ProjectDashboard: React.FC = () => {
                   ))}
                 </div>
                 <p className={`mt-2 text-[10px] text-ink-subtle`}>
-                  The floor plan and Inspector are always available.
+                  {t('dashboard.floorPlanInspector')}
                 </p>
               </div>
             )}
@@ -921,7 +923,7 @@ export const ProjectDashboard: React.FC = () => {
           </div>
         )}
         <h2 className="text-xs font-bold uppercase tracking-wide mb-2 opacity-70">
-          Saved projects {projects.length > 0 && `(${projects.length})`}
+          {t('dashboard.savedProjects')} {projects.length > 0 && `(${projects.length})`}
         </h2>
 
         {projects.length === 0 ? (
@@ -931,8 +933,8 @@ export const ProjectDashboard: React.FC = () => {
             }`}
           >
             <Clapperboard className="w-8 h-8 mx-auto mb-2 opacity-40" />
-            <p className="text-sm font-semibold">No projects yet</p>
-            <p className="text-xs mt-1">Name your production above and press Create to get started.</p>
+            <p className="text-sm font-semibold">{t('dashboard.noProjects')}</p>
+            <p className="text-xs mt-1">{t('dashboard.noProjectsHint')}</p>
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -974,7 +976,7 @@ export const ProjectDashboard: React.FC = () => {
                     )}
                     {isActive && (
                       <span className="px-1.5 py-0.5 rounded-full bg-sky-500/15 text-accent-ink text-[10px] font-bold uppercase flex-shrink-0">
-                        Open
+                        {t('dashboard.openBadge')}
                       </span>
                     )}
                   </div>
@@ -1001,20 +1003,20 @@ export const ProjectDashboard: React.FC = () => {
                       onClick={() => openProjectById(entry.id)}
                       className="px-2.5 py-1 rounded-lg bg-accent hover:bg-accent-hover text-white text-[11px] font-semibold"
                     >
-                      {isActive ? 'Continue' : 'Open'}
+                      {t(isActive ? 'dashboard.continue' : 'dashboard.open')}
                     </button>
                     <button
                       onClick={() => {
                         setRenamingId(entry.id);
                         setRenameValue(entry.title);
                       }}
-                      title="Rename"
-                      aria-label="Rename"
+                      title={t('dashboard.rename')}
+                      aria-label={t('dashboard.rename')}
                       className={ghostButton}
                     >
                       <Pencil className="w-3 h-3" />
                     </button>
-                    <button onClick={() => duplicateProject(entry.id)} title="Duplicate" aria-label="Duplicate" className={ghostButton}>
+                    <button onClick={() => duplicateProject(entry.id)} title={t('dashboard.duplicate')} aria-label={t('dashboard.duplicate')} className={ghostButton}>
                       <Copy className="w-3 h-3" />
                     </button>
                     <div className="relative">
@@ -1136,8 +1138,8 @@ export const ProjectDashboard: React.FC = () => {
                     ) : (
                       <button
                         onClick={() => setConfirmDeleteId(entry.id)}
-                        title="Delete project"
-                        aria-label="Delete project"
+                        title={t('dashboard.deleteProject')}
+                        aria-label={t('dashboard.deleteProject')}
                         className={`${ghostButton} ml-auto text-rose-500`}
                       >
                         <Trash2 className="w-3 h-3" />

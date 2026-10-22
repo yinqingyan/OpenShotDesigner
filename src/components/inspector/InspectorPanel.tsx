@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import { LANGUAGE_SWITCHING_ENABLED } from '../../config/features';
+import { DOCUMENT_LANGUAGE_SWITCHING_ENABLED } from '../../config/features';
 import { useFloorPlan } from '../../context/FloorPlanContext';
 import { useDialogs } from '../dialog/DialogProvider';
 import {
@@ -817,7 +817,7 @@ export const InspectorPanel: React.FC = () => {
                 an English-language co-production. */}
             {/* Hidden while language switching is off — unless a project
                 already prints in another language, so it can be switched back. */}
-            {(LANGUAGE_SWITCHING_ENABLED || (project.documentLanguage ?? 'en') !== 'en') && <div>
+            {(DOCUMENT_LANGUAGE_SWITCHING_ENABLED || (project.documentLanguage ?? 'en') !== 'en') && <div>
               <label htmlFor={`${fieldId}-document-language`} className={`block mb-1 text-ink-muted`}>Paperwork language</label>
               <select id={`${fieldId}-document-language`}
                 value={project.documentLanguage ?? 'en'}
@@ -2324,4 +2324,3 @@ export const InspectorPanel: React.FC = () => {
     </div>
   );
 };
-

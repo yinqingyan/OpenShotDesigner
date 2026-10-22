@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useState } from 'react';
-import { LANGUAGE_SWITCHING_ENABLED } from '../config/features';
+import { APP_LANGUAGE_SWITCHING_ENABLED } from '../config/features';
 import type { ReactNode } from 'react';
 import {
   detectLanguage,
@@ -24,9 +24,9 @@ const LanguageContext = createContext<LanguageContextValue>({
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   // With language switching off the app is English, whatever was detected or
   // chosen before (config/features.ts).
-  const [lang, setLangState] = useState<AppLanguage>(() => (LANGUAGE_SWITCHING_ENABLED ? detectLanguage() : 'en'));
+  const [lang, setLangState] = useState<AppLanguage>(() => (APP_LANGUAGE_SWITCHING_ENABLED ? detectLanguage() : 'en'));
   const setLang = useCallback((next: AppLanguage) => {
-    if (!LANGUAGE_SWITCHING_ENABLED) return;
+    if (!APP_LANGUAGE_SWITCHING_ENABLED) return;
     setLangState(next);
     persistLanguage(next);
   }, []);
